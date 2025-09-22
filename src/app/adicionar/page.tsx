@@ -1,15 +1,18 @@
-import BookForm from "@/components/book-form";
+import React from 'react';
+import BookForm from '@/components/book-form';
 
-export default function AdicionarPage() {
-  const handleAddBook = (data: any) => {
-    console.log("Novo livro adicionado:", data);
-    alert("Livro cadastrado com sucesso!");
+const AdicionarLivroPage: React.FC = () => {
+  const handleSubmit = (data: any) => {
+    console.log('Dados enviados:', data);
+    alert('Livro salvo com sucesso! ✅');
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Adicionar Livro</h1>
-      <BookForm onSubmit={handleAddBook} />
+    <div className="max-w-xl mx-auto mt-10">
+      <h1 className="text-2xl font-bold mb-4">Adicionar Novo Livro</h1>
+      <BookForm onSubmit={handleSubmit} />
     </div>
   );
-}
+};
+
+export default AdicionarLivroPage;

@@ -1,170 +1,115 @@
-"use client";
-
-import { useState, useMemo, useEffect } from "react";
-
-interface BookFormData {
-  titulo: string;
-  autor: string;
-  ano?: string;
-  capa?: string;
-  descricao?: string;
-}
+import React, { useState, useEffect } from 'react';
 
 interface BookFormProps {
-  initialData?: BookFormData | null;
-  onSubmit: (data: BookFormData) => void;
+  onSubmit: (data: any) => void;
+  initialData?: any;
 }
 
-export default function BookForm({ initialData = null, onSubmit }: BookFormProps) {
-  const [formData, setFormData] = useState<BookFormData>({
-    titulo: "",
-    autor: "",
-    ano: "",
-    capa: "",
-    descricao: "",
+const BookForm: React.FC<BookFormProps> = ({ onSubmit, initialData }) => {
+  const [formState, setFormState] = useState({
+    title: initialData?.title || '',
+    author: initialData?.author || '',
+    cover: initialData?.cover || '',
+    description: initialData?.description || '',
   });
 
-  // Carregar dados iniciais (modo edição)
+  const [progress, setProgress] = useState(0);
+
+  // Atualiza progresso conforme campos são preenchidos
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    }
-  }, [initialData]);
+    const totalFields = 4;
+    const filledFields = Object.values(formState).filter(v => v).length;
+    setProgress((filledFields / totalFields) * 100);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+    // Debug do estado do formulário
+    console.log('Form state:', formState);
+  }, [formState]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormState(prev => ({ ...prev, [name]: value }));
   };
-
-  const camposObrigatorios = ["titulo", "autor"];
-  const totalCampos = Object.keys(formData).length;
-  const preenchidos = useMemo(() => {
-    return Object.entries(formData).filter(
-      ([key, value]) =>
-        value && (camposObrigatorios.includes(key) || value.trim() !== "")
-    ).length;
-  }, [formData]);
-
-  const progresso = Math.round((preenchidos / totalCampos) * 100);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.titulo || !formData.autor) {
-      alert("Preencha os campos obrigatórios!");
-      return;
-    }
-    onSubmit(formData);
-
-    // Resetar apenas no modo adicionar
-    if (!initialData) {
-      setFormData({
-        titulo: "",
-        autor: "",
-        ano: "",
-        capa: "",
-        descricao: "",
-      });
-    }
+    onSubmit(formState);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Barra de progresso */}
+    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-md shadow-sm">
       <div>
-        <div className="h-2 w-full bg-gray-200 rounded-full">
-          <div
-            className="h-2 bg-blue-500 rounded-full transition-all"
-            style={{ width: `${progresso}%` }}
+        <label className="block font-medium">Título *</label>
+        <input
+          type="text"
+          name="title"
+          value={formState.title}
+          onChange={handleChange}
+          placeholder="Digite o título do livro..."
+          className="w-full border p-2 rounded"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Autor *</label>
+        <input
+          type="text"
+          name="author"
+          value={formState.author}
+          onChange={handleChange}
+          placeholder="Digite o nome do autor..."
+          className="w-full border p-2 rounded"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Capa (URL)</label>
+        <input
+          type="text"
+          name="cover"
+          value={formState.cover}
+          onChange={handleChange}
+          placeholder="Cole a URL da capa do livro"
+          className="w-full border p-2 rounded"
+        />
+        {formState.cover && (
+          <img
+            src={formState.cover}
+            alt="Preview da capa"
+            className="mt-2 w-40 h-60 object-cover border"
           />
-        </div>
-        <p className="text-sm text-gray-600 mt-1">{progresso}% completo</p>
-      </div>
-
-      {/* Título */}
-      <div>
-        <label className="block font-medium">
-          Título <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="titulo"
-          value={formData.titulo}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-2"
-          required
-        />
-      </div>
-
-      {/* Autor */}
-      <div>
-        <label className="block font-medium">
-          Autor <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="autor"
-          value={formData.autor}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-2"
-          required
-        />
-      </div>
-
-      {/* Ano */}
-      <div>
-        <label className="block font-medium">Ano</label>
-        <input
-          type="number"
-          name="ano"
-          value={formData.ano}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-2"
-        />
-      </div>
-
-      {/* Capa */}
-      <div>
-        <label className="block font-medium">URL da Capa</label>
-        <input
-          type="url"
-          name="capa"
-          value={formData.capa}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-2"
-        />
-        {formData.capa && (
-          <div className="mt-3">
-            <p className="text-sm mb-1">Pré-visualização:</p>
-            <img
-              src={formData.capa}
-              alt="Preview da capa"
-              className="w-32 h-44 object-cover border rounded-lg shadow"
-            />
-          </div>
         )}
       </div>
 
-      {/* Descrição */}
       <div>
         <label className="block font-medium">Descrição</label>
         <textarea
-          name="descricao"
-          value={formData.descricao}
+          name="description"
+          value={formState.description}
           onChange={handleChange}
-          className="w-full border rounded-lg p-2"
-          rows={4}
+          placeholder="Opcional: escreva uma breve descrição do livro"
+          className="w-full border p-2 rounded"
+          rows={3}
         />
       </div>
 
-      {/* Botão */}
+      <div className="h-2 bg-gray-200 rounded">
+        <div
+          className="h-2 bg-green-500 rounded"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <span className="text-sm text-gray-500">{Math.round(progress)}% preenchido</span>
+
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
       >
-        {initialData ? "Atualizar" : "Salvar"}
+        Salvar
       </button>
     </form>
   );
-}
+};
+
+export default BookForm;
