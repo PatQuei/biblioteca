@@ -1,65 +1,39 @@
-📖 Guia de Uso do BookForm
-Onde está
+# 📚 BookShelf v2: Sua Jornada de Leitura, Otimizada.
 
-Componente: src/components/book-form.tsx
+Este projeto foi desenvolvido como parte do programa **Desenvolve**, um projeto do **Grupo Boticário**.
 
-Página de exemplo (Adicionar): src/app/adicionar/page.tsx
+O BookShelf v2 é a sua solução pessoal e robusta para gerenciar sua biblioteca, rastrear o progresso e manter anotações. Esta versão marca um salto arquitetônico, migrando de arquivos JSON para um **Banco de Dados Relacional** com **Prisma ORM**, garantindo maior **performance** e **integridade de dados**.
 
-🟢 Adicionar Livro
+---
 
-Exemplo de uso (já implementado em page.tsx):
+## 🚀 Tecnologias
 
-<BookForm
-  onSubmit={(data) => {
-    console.log("Novo livro:", data);
-    // Aqui cada um pode integrar com API, banco ou mock
-  }}
-/>
+O BookShelf v2 é construído com ferramentas de ponta para garantir performance e escalabilidade em ambientes Serverless:
 
+| Categoria | Tecnologia | Uso no Projeto |
+| :--- | :--- | :--- |
+| **Frontend/Backend** | **Next.js** | Framework React (App Router, Server Components e Server Actions) |
+| **Tipagem** | **TypeScript** | Garante *Type Safety* completa, especialmente com tipos gerados pelo Prisma. |
+| **Banco de Dados** | **Turso DB** | Banco de dados **SQLite Distribuído** para Edge Computing, altamente compatível com ambientes Serverless. |
+| **ORM** | **Prisma ORM** | Ferramenta moderna para modelagem de dados, migrações e operações *type-safe* no banco. |
+| **Deploy** | **Vercel** | Hospedagem Serverless da aplicação Next.js. |
 
-initialData não é usado.
+---
 
-onSubmit recebe os dados do formulário.
+## ⚙️ Setup Local (Para Desenvolvedores)
 
-🟡 Editar Livro
+Siga estes passos rápidos para ter o projeto rodando na sua máquina.
 
-Para editar, basta passar dados iniciais no initialData e tratar o onSubmit.
+### 1. Pré-requisitos
+* Node.js (18+)
+* **Prisma CLI** e **ts-node** instalados
 
-Exemplo:
+### 2. Clonagem e Instalação
 
-<BookForm
-  initialData={{
-    titulo: "Dom Casmurro",
-    autor: "Machado de Assis",
-    ano: "1899",
-    capa: "https://link-da-capa.jpg",
-    descricao: "Um clássico da literatura brasileira."
-  }}
-  onSubmit={(data) => {
-    console.log("Livro atualizado:", data);
-    // Aqui cada um pode implementar update no backend
-  }}
-/>
+```bash
+# Clone o repositório (Atualize a URL)
+git clone [https://github.com/seu-usuario/BookShelf-v2.git](https://github.com/seu-usuario/BookShelf-v2.git)
+cd BookShelf-v2
 
-
-O formulário já abre preenchido.
-
-O botão muda para “Atualizar” automaticamente.
-
-🔧 O que já está pronto
-
-Validação de campos obrigatórios (titulo e autor).
-
-Campos opcionais (ano, capa, descricao).
-
-Preview em tempo real da capa (URL).
-
-Barra de progresso de preenchimento.
-
-Reset automático do formulário apenas no modo adicionar.
-
-👉 Resumindo para o time:
-
-Quem precisar adicionar só usa <BookForm onSubmit={...} />.
-
-Quem precisar editar usa <BookForm initialData={...} onSubmit={...} />.
+# Instale as dependências
+npm install
