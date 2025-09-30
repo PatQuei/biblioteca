@@ -1,4 +1,4 @@
-import { DeleteBookButton } from "@/app/components/delete-book-button";
+import { DeleteBookButton } from "@/components/delete-book-button";
 
 function deleteBook(id: string) {
   console.log("Livro excluido:", id);
