@@ -18,7 +18,7 @@ model Book {
   rating      Int
   synopsis    String
   cover       String
-  status      Status   @default(QUERO_LER)
+  status      String   @default("QUERO_LER") // QUERO_LER, LENDO, LIDO, PAUSADO, ABANDONADO
   currentPage Int      @default(0)
   isbn        String?
   notes       String?
@@ -30,12 +30,4 @@ model Genre {
   id    String @id @default(cuid())
   name  String @unique
   books Book[]
-}
-
-enum Status {
-  QUERO_LER
-  LENDO
-  LIDO
-  PAUSADO
-  ABANDONADO
 }
