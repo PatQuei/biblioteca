@@ -1,91 +1,148 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import BookForm from "../../components/book-form";
+import DeleteBookButton from "../../components/delete-book-button";
+import type { BookFormData } from "../../types/book";
 
-const styles = {
-  section: {
-    maxWidth: "400px",
-    margin: "32px auto",
-    padding: "24px",
-    background: "#23272f",
-    borderRadius: "16px",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-    color: "#eaf2fb",
-    border: "2px solid #2376ae",
-  },
-  btn: {
-    marginRight: "12px",
-    padding: "8px 20px",
-    fontWeight: "bold",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    transition: "filter 0.2s",
-    textDecoration: "none",
-    display: "inline-block",
-  },
-  btnEdit: {
-    backgroundColor: "#bbf7d0",
-    color: "#065f46",
-    border: "1px solid #065f46",
-  },
-  btnExcluir: {
-    backgroundColor: "#fee2e2",
-    color: "#b91c1c",
-    border: "1px solid #b91c1c",
-  },
-  errorSection: {
-    maxWidth: "400px",
-    margin: "32px auto",
-    padding: "24px",
-    backgroundColor: "#331111",
-    color: "#fdd",
-    borderRadius: "16px",
-    textAlign: "center" as const,
-  }
-};
-
-const livrosIniciais = [
-  { id: "1", titulo: "Aprendendo React", autor: "Daniele", ano: 2023, resumo: "Livro sobre React para iniciantes." },
-  { id: "2", titulo: "Dominando Next.js", autor: "Daniele", ano: 2024, resumo: "Guia prático de Next.js." },
-];
-
-export default function LivroDetalhesPage() {
-  const params = useParams();
+export default function EditarLivroPage() {
   const router = useRouter();
-  const [livros, setLivros] = useState(livrosIniciais);
+  const params = useParams();
+  const id = params.id;
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [book, setBook] = useState<BookFormData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const livroId = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : "";
-  const livro = livros.find(l => l.id === livroId);
+  useEffect(() => {
+    async function fetchBook() {
+      try {
+        const response = await fetch(`/api/books?id=${id}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Livro não encontrado');
+        }
+        const data = await response.json();
+        setBook(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao carregar o livro');
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  function excluirLivro(id: string) {
-    if (window.confirm("Tem certeza que deseja excluir este livro?")) {
-      setLivros(livros.filter(l => l.id !== id));
-      router.push("/livros");
+    if (id) {
+      fetchBook();
+    }
+  }, [id]);
+
+  async function handleSubmit(data: BookFormData) {
+    try {
+      setSubmitting(true);
+      setError(null);
+      
+      const response = await fetch(`/api/books?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Erro ao atualizar o livro');
+      }
+
+      await router.push("/biblioteca");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar o livro');
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  if (!livro) {
+  if (loading) {
     return (
-      <section style={styles.errorSection}>
-        <h2>Livro não encontrado.</h2>
-        <Link href="/livros" style={{ ...styles.btn, ...styles.btnEdit }}>Voltar para lista</Link>
-      </section>
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-lg">Carregando...</div>
+      </div>
     );
   }
 
-  return (
-    <section style={styles.section}>
-      <h1>Livro: {livro.titulo}</h1>
-      <p><strong>Autor:</strong> {livro.autor}</p>
-      <p><strong>Ano:</strong> {livro.ano}</p>
-      <p><strong>Resumo:</strong> {livro.resumo}</p>
-      <div style={{ marginTop: "24px" }}>
-        <Link href={`/livros/${livro.id}/editar`} style={{ ...styles.btn, ...styles.btnEdit }}>Editar</Link>
-        <button onClick={() => excluirLivro(livro.id)} style={{ ...styles.btn, ...styles.btnExcluir }}>Excluir</button>
+  if (error) {
+    return (
+      <div className="max-w-xl mx-auto mt-10 p-4 bg-red-50 border border-red-200 rounded-md">
+        <h2 className="text-red-700 font-semibold">Erro</h2>
+        <p className="text-red-600">{error}</p>
+        <button 
+          onClick={() => router.push("/biblioteca")}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
+          Voltar
+        </button>
       </div>
-    </section>
+    );
+  }
+
+  if (!book) {
+    return (
+      <div className="max-w-xl mx-auto mt-10 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+        <h2 className="text-yellow-700 font-semibold">Livro não encontrado</h2>
+        <button 
+          onClick={() => router.push("/biblioteca")}
+          className="mt-4 px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+        >
+          Voltar para Biblioteca
+        </button>
+      </div>
+    );
+  }
+
+  const handleDelete = async () => {
+    try {
+      setSubmitting(true);
+      const response = await fetch(`/api/books?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Erro ao excluir o livro');
+      }
+
+      router.push('/biblioteca');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir o livro');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-xl mx-auto mt-10 p-4">
+      <h1 className="text-2xl font-bold mb-6">Editar Livro</h1>
+      <div className="mb-6 flex items-center justify-end space-x-4">
+        <Link href={`/livros/${id}/editar`} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+          Editar Livro
+        </Link>
+      </div>
+      <BookForm
+        initialData={book}
+        onSubmit={handleSubmit}
+        botaoTexto={submitting ? "Salvando..." : "Salvar Alterações"}
+        disabled={submitting}
+      />
+      <div className="mt-8 border-t pt-6">
+        <p className="text-gray-600 mb-4">
+          Aviso: Esta exclusão não pode ser revertida.
+        </p>
+        <DeleteBookButton onDelete={handleDelete} disabled={submitting} />
+      </div>
+    </div>
   );
 }

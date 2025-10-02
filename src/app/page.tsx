@@ -2,6 +2,7 @@ import { StatsCard } from "./components/stats-card";
 import books from "./data/books";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import DeleteBookButton from "./components/delete-book-button";
 
 type Book = {
   status: string;

@@ -1,10 +1,33 @@
+"use client";
+
 import React from 'react';
-import BookForm from '@/components/book-form';
+import { useRouter } from 'next/navigation';
+import BookForm from '../components/book-form';
+import type { BookFormData } from '../types/book';
 
 const AdicionarLivroPage: React.FC = () => {
-  const handleSubmit = (data: any) => {
-    console.log('Dados enviados:', data);
-    alert('Livro salvo com sucesso! ✅');
+  const router = useRouter();
+
+  const handleSubmit = async (data: BookFormData) => {
+    try {
+      const response = await fetch('/api/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao salvar o livro');
+      }
+
+      router.push('/biblioteca');
+      router.refresh();
+    } catch (error) {
+      console.error('Erro ao salvar o livro:', error);
+      alert('Erro ao salvar o livro. Por favor, tente novamente.');
+    }
   };
 
   return (
