@@ -1,5 +1,5 @@
-import React from 'react';
-import type { Book } from '../types/book';
+import React from "react";
+import type { Book } from "../types/book";
 
 interface BookCardProps {
   book: Book;
@@ -19,7 +19,7 @@ export default function BookCard({ book }: BookCardProps) {
           <span className="text-gray-400">Sem capa</span>
         </div>
       )}
-      
+
       <div className="p-4">
         <h2 className="font-bold text-xl mb-2 truncate" title={book.title}>
           {book.title}

@@ -1,104 +1,148 @@
 "use client";
-import React, { useState } from "react";
 
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import BookForm from "../../../../components/components/book-form";
+import type { BookFormData } from "../../../types/book";
+import { updateBook } from "../../../actions/books";
 
-interface Livro {
-  title: string;
-  author: string;
-  ano?: string;
-  description?: string;
-}
+const EditarLivroPage: React.FC = () => {
+  const router = useRouter();
+  const params = useParams();
+  const bookId = params.id as string;
 
-interface EditarLivroProps {
-  livroInicial: Livro;
-  onSalvar: (livro: Livro) => void;
-}
+  const [bookData, setBookData] = useState<BookFormData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-export default function EditarLivro({ livroInicial, onSalvar }: EditarLivroProps) {
-  const livroDefault: Livro = {
-    title: "Aprendendo React",
-    author: "Daniele",
-    ano: "2023",
-    description: "Livro sobre React para iniciantes."
+  // Carregar dados do livro
+  useEffect(() => {
+    const fetchBook = async () => {
+      try {
+        const response = await fetch(`/api/books/${bookId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          setBookData(result.data);
+        } else {
+          alert("Erro ao carregar dados do livro");
+          router.push("/biblioteca");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar livro:", error);
+        alert("Erro ao carregar dados do livro");
+        router.push("/biblioteca");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (bookId) {
+      fetchBook();
+    }
+  }, [bookId, router]);
+
+  const handleSubmit = async (data: BookFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      // Criar FormData para a Server Action
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("author", data.author);
+      formData.append("genreId", data.genreId);
+      formData.append(
+        "year",
+        (data.year || new Date().getFullYear()).toString()
+      );
+      formData.append("pages", (data.pages || 0).toString());
+      formData.append("rating", (data.rating || 0).toString());
+      formData.append("synopsis", data.synopsis || "");
+      formData.append("cover", data.cover || "");
+      formData.append("status", data.status || "QUERO_LER");
+      formData.append("currentPage", (data.currentPage || 0).toString());
+      formData.append("isbn", data.isbn || "");
+      formData.append("notes", data.notes || "");
+
+      const result = await updateBook(bookId, formData);
+
+      if (result.success) {
+        alert(result.message);
+        router.push(`/biblioteca/${bookId}`);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar o livro:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erro ao atualizar o livro. Por favor, tente novamente."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  const [livro, setLivro] = useState<Livro>(livroInicial ?? livroDefault);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    setLivro({ ...livro, [e.target.name]: e.target.value });
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto mt-10 p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            Carregando dados do livro...
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    onSalvar(livro);
+  if (!bookData) {
+    return (
+      <div className="max-w-4xl mx-auto mt-10 p-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Livro não encontrado
+          </h1>
+          <button
+            onClick={() => router.push("/biblioteca")}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Voltar à Biblioteca
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        maxWidth: "400px",
-        margin: "32px auto",
-        padding: "24px",
-        background: "#f8f9fa",
-        borderRadius: "10px",
-        boxShadow: "0 0 10px 3px #eee"
-      }}
-    >
-      <h2 style={{ marginBottom: 18 }}>Editar Livro</h2>
-      <div style={{ marginBottom: 12 }}>
-        <label>Título:</label>
-        <input
-          type="text"
-          name="title"
-          value={livro.title}
-          onChange={handleChange}
-          style={{ width: "100%", marginTop: 4, padding: 8, borderRadius: 6, border: "1px solid #aaa" }}
-        />
+    <div className="max-w-4xl mx-auto mt-10 p-6">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+          Editar Livro
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Atualize as informações do livro &ldquo;{bookData.title}&rdquo;
+        </p>
       </div>
-      <div style={{ marginBottom: 12 }}>
-        <label>Autor:</label>
-        <input
-          type="text"
-          name="author"
-          value={livro.author}
-          onChange={handleChange}
-          style={{ width: "100%", marginTop: 4, padding: 8, borderRadius: 6, border: "1px solid #aaa" }}
-        />
+
+      <div className="flex justify-center mb-6">
+        <button
+          onClick={() => router.push(`/biblioteca/${bookId}`)}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded mr-2"
+        >
+          Cancelar
+        </button>
       </div>
-      <div style={{ marginBottom: 12 }}>
-        <label>Ano:</label>
-        <input
-          type="text"
-          name="ano"
-          value={livro.ano || ""}
-          onChange={handleChange}
-          style={{ width: "100%", marginTop: 4, padding: 8, borderRadius: 6, border: "1px solid #aaa" }}
-        />
-      </div>
-      <div style={{ marginBottom: 18 }}>
-        <label>Descrição:</label>
-        <textarea
-          name="description"
-          value={livro.description || ""}
-          onChange={handleChange}
-          style={{ width: "100%", minHeight: 60, marginTop: 4, padding: 8, borderRadius: 6, border: "1px solid #aaa" }}
-        />
-      </div>
-      <button
-        type="submit"
-        style={{
-          background: "#0070f3",
-          color: "#fff",
-          padding: "10px 28px",
-          border: "none",
-          borderRadius: 6,
-          fontWeight: "bold",
-          fontSize: 16,
-          cursor: "pointer"
-        }}
-      >
-        Salvar
-      </button>
-    </form>
+
+      <BookForm
+        onSubmit={handleSubmit}
+        initialData={bookData}
+        botaoTexto="Atualizar Livro"
+        disabled={isSubmitting}
+      />
+    </div>
   );
-}
+};
+
+export default EditarLivroPage;
