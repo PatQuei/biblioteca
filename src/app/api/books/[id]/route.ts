@@ -101,7 +101,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Preparar dados para atualização (apenas campos fornecidos)
-    const updateData: any = {};
+    const updateData: Record<string, any> = {};
     
     if (title !== undefined) updateData.title = title;
     if (author !== undefined) updateData.author = author;
@@ -141,51 +141,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       { 
         success: false, 
         error: 'Erro interno do servidor ao atualizar livro' 
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/books/[id] - Deletar um livro
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { id } = params;
-
-    // Verificar se o livro existe
-    const existingBook = await prisma.book.findUnique({
-      where: { id }
-    });
-
-    if (!existingBook) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Livro não encontrado' 
-        },
-        { status: 404 }
-      );
-    }
-
-    await prisma.book.delete({
-      where: { id }
-    });
-
-    // Revalidar as páginas que mostram livros
-    revalidatePath('/biblioteca');
-    revalidatePath('/');
-
-    return NextResponse.json({
-      success: true,
-      message: 'Livro deletado com sucesso'
-    });
-
-  } catch (error) {
-    console.error('Erro ao deletar livro:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erro interno do servidor ao deletar livro' 
       },
       { status: 500 }
     );
