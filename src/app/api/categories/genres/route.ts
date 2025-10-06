@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     } else {
       // Ordenação por nome
-      const orderByClause = sortBy === 'name' ? { name: order } : { name: 'asc' };
+      const orderByClause = sortBy === 'name' ? { name: order as any } : { name: 'asc' as any };
 
       const genres = await prisma.genre.findMany({
         include: {

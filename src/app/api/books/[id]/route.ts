@@ -3,15 +3,15 @@ import { revalidatePath } from 'next/cache';
 import prisma from '../../../lib/prisma';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET /api/books/[id] - Buscar um livro específico
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const book = await prisma.book.findUnique({
       where: { id },
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PUT /api/books/[id] - Atualizar um livro
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // Verificar se o livro existe
@@ -101,7 +101,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Preparar dados para atualização (apenas campos fornecidos)
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, string | number | null> = {};
     
     if (title !== undefined) updateData.title = title;
     if (author !== undefined) updateData.author = author;

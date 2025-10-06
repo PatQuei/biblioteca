@@ -3,15 +3,15 @@ import { revalidatePath } from 'next/cache';
 import prisma from '../../../../lib/prisma';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     genre: string;
-  };
+  }>;
 }
 
 // GET /api/categories/genres/[genre] - Buscar livros de um gênero específico
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { genre } = params;
+    const { genre } = await params;
     const { searchParams } = new URL(request.url);
     const includeStats = searchParams.get('includeStats') === 'true';
     const status = searchParams.get('status');
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Buscar livros do gênero
-    let whereClause: any = {
+            const whereClause: Record<string, unknown> = {
       genreId: genreData.id
     };
 
@@ -64,7 +64,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       skip: offset ? parseInt(offset) : undefined
     });
 
-    let response: any = {
+    const response: {
+      success: boolean;
+      data: {
+        genre: any;
+        books: any[];
+        count: number;
+        stats?: any;
+      };
+    } = {
       success: true,
       data: {
         genre: genreData,
@@ -124,7 +132,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PUT /api/categories/genres/[genre] - Atualizar nome do gênero
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const { genre } = params;
+    const { genre } = await params;
     const body = await request.json();
     const { newName } = body;
 
@@ -208,7 +216,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/categories/genres/[genre] - Deletar um gênero específico
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { genre } = params;
+    const { genre } = await params;
 
     // Buscar o gênero pelo nome
     const decodedGenre = decodeURIComponent(genre);

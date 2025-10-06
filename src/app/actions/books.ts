@@ -105,7 +105,7 @@ export async function updateBook(bookId: string, formData: FormData) {
     }
 
     // Preparar dados para atualização (apenas campos fornecidos)
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, string | number | null> = {};
     
     if (title) updateData.title = title.trim();
     if (author) updateData.author = author.trim();
