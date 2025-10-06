@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: path.join(__dirname),
+  outputFileTracingRoot: path.join(__dirname, '../'),
   images: {
     remotePatterns: [
       {
@@ -31,8 +31,33 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'covers.openlibrary.org',
+      },
+      {
+        protocol: 'https',
         hostname: 'cover.openlibrary.org',
-      }
+      },
+      // Adicionados para resolver o problema
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'imgur.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'books.google.com',
+      },
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
