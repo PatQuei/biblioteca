@@ -27,9 +27,9 @@ export default function BookCard({ book }: BookCardProps) {
         <p className="text-gray-600 truncate" title={book.author}>
           {book.author}
         </p>
-        {book.description && (
+        {book.synopsis && (
           <p className="text-gray-500 text-sm mt-2 line-clamp-2">
-            {book.description}
+            {book.synopsis}
           </p>
         )}
       </div>

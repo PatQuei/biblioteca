@@ -9,9 +9,7 @@ export async function GET(request: NextRequest) {
     const includeBookCount = searchParams.get('includeBookCount') === 'true';
     const search = searchParams.get('search');
 
-    let whereClause: any = {};
-
-    // Filtro de busca por nome da categoria
+        const whereClause: Record<string, unknown> = {};    // Filtro de busca por nome da categoria
     if (search) {
       whereClause.name = {
         contains: search,
