@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Star, Plus, Minus } from "lucide-react";
 import { useState } from "react";
 import type { Book } from "@prisma/client";
-import { updateReadingProgress } from "../../app/actions/books";
+import { updateReadingProgressAPI } from "../../app/lib/api-client";
 
 const statusColors: { [key: string]: string } = {
   QUERO_LER: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
@@ -29,7 +29,7 @@ export function BookCard({ book }: { book: Book }) {
 
     setIsUpdating(true);
     try {
-      const result = await updateReadingProgress(book.id, newPage);
+      const result = await updateReadingProgressAPI(book.id, newPage);
 
       if (result.success) {
         setCurrentPage(newPage);

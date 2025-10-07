@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import BookForm from "../../components/components/book-form";
 import type { BookFormData } from "../types/book";
-import { createBook } from "../actions/books";
+import { createBookAPI } from "../lib/api-client";
 
 const AdicionarLivroPage: React.FC = () => {
   const router = useRouter();
@@ -14,24 +14,12 @@ const AdicionarLivroPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Criar FormData para a Server Action
-      const formData = new FormData();
-      formData.append("title", data.title);
-      formData.append("author", data.author);
-      formData.append("genreId", data.genreId);
-      formData.append(
-        "year",
-        (data.year || new Date().getFullYear()).toString()
-      );
-      formData.append("pages", (data.pages || 0).toString());
-      formData.append("rating", (data.rating || 0).toString());
-      formData.append("synopsis", data.synopsis || "");
-      formData.append("cover", data.cover || "");
-      formData.append("status", data.status || "QUERO_LER");
-      formData.append("isbn", data.isbn || "");
-      formData.append("notes", data.notes || "");
+      // Validações básicas
+      if (!data.title || !data.author || !data.genreId) {
+        throw new Error('Título, autor e gênero são obrigatórios');
+      }
 
-      const result = await createBook(formData);
+      const result = await createBookAPI(data);
 
       if (result.success) {
         alert(result.message);

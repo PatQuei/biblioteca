@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { Plus, Minus, Play, Pause, RotateCcw, CheckCircle } from "lucide-react";
 import {
-  updateReadingProgress,
-  updateBookStatus,
-} from "../../app/actions/books";
+  updateReadingProgressAPI,
+  updateBookStatusAPI,
+} from "../../app/lib/api-client";
 import type { BookStatus } from "../../app/types/book";
 
 interface QuickProgressControlsProps {
@@ -36,16 +36,16 @@ export function QuickProgressControls({
       let result;
 
       if (newStatus) {
-        result = await updateBookStatus(bookId, newStatus);
+        result = await updateBookStatusAPI(bookId, newStatus);
         if (result.success) {
           // Se mudou o status, também atualiza a página se necessário
-          const progressResult = await updateReadingProgress(bookId, newPage);
+          const progressResult = await updateReadingProgressAPI(bookId, newPage);
           if (!progressResult.success) {
             throw new Error(progressResult.error);
           }
         }
       } else {
-        result = await updateReadingProgress(bookId, newPage);
+        result = await updateReadingProgressAPI(bookId, newPage);
       }
 
       if (result.success) {

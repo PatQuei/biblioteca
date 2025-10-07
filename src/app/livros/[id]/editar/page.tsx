@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import BookForm from "../../../../components/components/book-form";
 import type { BookFormData } from "../../../types/book";
-import { updateBook } from "../../../actions/books";
+import { updateBookAPI } from "../../../lib/api-client";
 
 const EditarLivroPage: React.FC = () => {
   const router = useRouter();
@@ -46,25 +46,7 @@ const EditarLivroPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Criar FormData para a Server Action
-      const formData = new FormData();
-      formData.append("title", data.title);
-      formData.append("author", data.author);
-      formData.append("genreId", data.genreId);
-      formData.append(
-        "year",
-        (data.year || new Date().getFullYear()).toString()
-      );
-      formData.append("pages", (data.pages || 0).toString());
-      formData.append("rating", (data.rating || 0).toString());
-      formData.append("synopsis", data.synopsis || "");
-      formData.append("cover", data.cover || "");
-      formData.append("status", data.status || "QUERO_LER");
-      formData.append("currentPage", (data.currentPage || 0).toString());
-      formData.append("isbn", data.isbn || "");
-      formData.append("notes", data.notes || "");
-
-      const result = await updateBook(bookId, formData);
+      const result = await updateBookAPI(bookId, data);
 
       if (result.success) {
         alert(result.message);
