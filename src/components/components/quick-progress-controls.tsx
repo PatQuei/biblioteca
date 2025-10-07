@@ -39,7 +39,10 @@ export function QuickProgressControls({
         result = await updateBookStatusAPI(bookId, newStatus);
         if (result.success) {
           // Se mudou o status, também atualiza a página se necessário
-          const progressResult = await updateReadingProgressAPI(bookId, newPage);
+          const progressResult = await updateReadingProgressAPI(
+            bookId,
+            newPage
+          );
           if (!progressResult.success) {
             throw new Error(progressResult.error);
           }

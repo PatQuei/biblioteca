@@ -16,7 +16,7 @@ const AdicionarLivroPage: React.FC = () => {
     try {
       // Validações básicas
       if (!data.title || !data.author || !data.genreId) {
-        throw new Error('Título, autor e gênero são obrigatórios');
+        throw new Error("Título, autor e gênero são obrigatórios");
       }
 
       const result = await createBookAPI(data);
