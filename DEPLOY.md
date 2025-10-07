@@ -162,24 +162,29 @@ biblioteca/
 A API `/api/stats` foi **completamente reformulada** para funcionar perfeitamente em ambiente serverless:
 
 **Como funciona agora:**
+
 - 🎯 **Produção (Vercel)**: Detecta automaticamente e usa dados de demonstração atrativos
-- 🏠 **Desenvolvimento**: Tenta usar banco real, fallback para dados demo se necessário  
+- 🏠 **Desenvolvimento**: Tenta usar banco real, fallback para dados demo se necessário
 - ✅ **Sempre funciona**: Nunca mais retorna erro 500
 
 **APIs disponíveis:**
+
 - `GET /api/stats` - API principal com detecção inteligente de ambiente
 - `GET /api/demo-stats` - API de teste que sempre retorna dados de demonstração
 
 **Mensagem exibida aos usuários:**
-> *"Aplicação funcionando! Os dados são demonstrativos. Acesse localmente para usar o banco real."*
+
+> _"Aplicação funcionando! Os dados são demonstrativos. Acesse localmente para usar o banco real."_
 
 ### Benefícios:
+
 1. **Deploy instantâneo**: Sem mais erros de banco em produção
 2. **Demonstração perfeita**: Dados atrativos mostram todas as funcionalidades
 3. **Experiência suave**: Interface nunca quebra por problemas de banco
 4. **Desenvolvimento normal**: Continua funcionando com SQLite local
 
 ### Próximos passos (opcionais):
+
 - Implementar base de dados serverless (Vercel KV, Turso, PlanetScale)
 - Ou manter como sistema de demonstração da aplicação
 
