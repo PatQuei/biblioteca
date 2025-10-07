@@ -109,15 +109,17 @@ export default function EditarLivroPage() {
   const handleDelete = async () => {
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/books?id=${id}`, {
+      const response = await fetch(`/api/books/${id}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Erro ao excluir o livro");
+        throw new Error(errorData.error || "Erro ao excluir o livro");
       }
 
+      const result = await response.json();
+      alert(result.message || "Livro deletado com sucesso!");
       router.push("/biblioteca");
       router.refresh();
     } catch (err) {
