@@ -174,10 +174,9 @@ export default function DashboardPage() {
         {mainStats.map((stat) => (
           <StatsCard
             key={stat.label}
-            icon={stat.icon}
-            label={stat.label}
+            icon={<stat.icon size={24} />}
+            title={stat.label}
             value={stat.value}
-            color={stat.color}
           />
         ))}
       </div>
@@ -236,10 +235,9 @@ export default function DashboardPage() {
         {additionalStats.map((stat) => (
           <StatsCard
             key={stat.label}
-            icon={stat.icon}
-            label={stat.label}
+            icon={<stat.icon size={24} />}
+            title={stat.label}
             value={stat.value}
-            color={stat.color}
           />
         ))}
       </div>
