@@ -3,38 +3,80 @@ import prisma from '../../lib/prisma';
 
 export async function GET() {
   try {
-    console.log('Iniciando busca de estatísticas...');
+    console.log('🔍 Iniciando busca de estatísticas...');
+    console.log('📊 Environment:', process.env.NODE_ENV);
+    console.log('🗄️ Database:', process.env.DATABASE_URL?.substring(0, 30) + '...');
     
     // Verificar conexão com o banco primeiro
     try {
       await prisma.$connect();
-      console.log('Conexão com banco estabelecida');
+      console.log('✅ Conexão com banco estabelecida');
     } catch (connectionError) {
-      console.error('Erro de conexão com banco:', connectionError);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Erro de conexão com o banco de dados',
-          details: process.env.NODE_ENV === 'development' ? connectionError : undefined
+      console.error('❌ Erro de conexão com banco:', connectionError);
+      
+      // Retornar dados vazios em caso de erro de conexão
+      return NextResponse.json({
+        success: true,
+        data: {
+          overview: {
+            totalBooks: 0,
+            readingBooks: 0,
+            finishedBooks: 0,
+            wantToReadBooks: 0,
+            pausedBooks: 0,
+            abandonedBooks: 0,
+            totalGenres: 0,
+            averageRating: 0
+          },
+          progress: {
+            totalPages: 0,
+            readPages: 0,
+            readingProgress: 0
+          },
+          recentActivity: [],
+          topGenres: [],
+          topRatedBooks: []
         },
-        { status: 500 }
-      );
+        fallback: true,
+        message: 'Dados padrão retornados devido a erro de conexão'
+      });
     }
 
-    // Buscar estatísticas gerais
-    const [
-      totalBooks,
-      readingBooks,
-      finishedBooks,
-      wantToReadBooks,
-      pausedBooks,
-      abandonedBooks,
-      totalPages,
-      readPages,
-      totalGenres,
-      averageRating,
-      recentBooks
-    ] = await Promise.all([
+    // Primeiro, verificar se há dados no banco
+    const hasData = await prisma.book.count();
+    console.log('📚 Total de livros encontrados:', hasData);
+    
+    if (hasData === 0) {
+      console.log('⚠️ Banco vazio, retornando estatísticas zeradas');
+      return NextResponse.json({
+        success: true,
+        data: {
+          overview: {
+            totalBooks: 0,
+            readingBooks: 0,
+            finishedBooks: 0,
+            wantToReadBooks: 0,
+            pausedBooks: 0,
+            abandonedBooks: 0,
+            totalGenres: 0,
+            averageRating: 0
+          },
+          progress: {
+            totalPages: 0,
+            readPages: 0,
+            readingProgress: 0
+          },
+          recentActivity: [],
+          topGenres: [],
+          topRatedBooks: []
+        },
+        empty: true,
+        message: 'Banco vazio - adicione alguns livros primeiro'
+      });
+    }
+
+    // Buscar estatísticas gerais com timeout
+    const statsPromise = Promise.all([
       // Total de livros
       prisma.book.count(),
       
@@ -111,7 +153,33 @@ export async function GET() {
       })
     ]);
 
-    console.log('Estatísticas básicas coletadas:', {
+    // Timeout de 20 segundos para queries
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout nas queries')), 20000);
+    });
+
+    const [
+      totalBooks,
+      readingBooks,
+      finishedBooks,
+      wantToReadBooks,
+      pausedBooks,
+      abandonedBooks,
+      totalPages,
+      readPages,
+      totalGenres,
+      averageRating,
+      recentBooks
+    ] = await Promise.race([statsPromise, timeoutPromise]) as [
+      number, number, number, number, number, number,
+      { _sum: { pages: number | null } },
+      { _sum: { currentPage: number | null } },
+      number,
+      { _avg: { rating: number | null } },
+      Array<{ id: string; title: string; author: string; genre: { name: string }; status: string; createdAt: Date }>
+    ];
+
+    console.log('📈 Estatísticas básicas coletadas:', {
       totalBooks,
       totalGenres,
       recentBooksCount: recentBooks.length
@@ -136,6 +204,7 @@ export async function GET() {
         books: number;
       };
     }> = [];
+    
     try {
       genreStats = await prisma.genre.findMany({
         include: {
@@ -153,7 +222,7 @@ export async function GET() {
         take: 5
       });
     } catch (genreError) {
-      console.warn('Erro ao buscar estatísticas de gênero:', genreError);
+      console.warn('⚠️ Erro ao buscar estatísticas de gênero:', genreError);
       genreStats = [];
     }
 
@@ -167,6 +236,7 @@ export async function GET() {
         name: string;
       };
     }> = [];
+    
     try {
       topRatedBooks = await prisma.book.findMany({
         where: {
@@ -183,11 +253,11 @@ export async function GET() {
         }
       });
     } catch (ratingError) {
-      console.warn('Erro ao buscar livros mais bem avaliados:', ratingError);
+      console.warn('⚠️ Erro ao buscar livros mais bem avaliados:', ratingError);
       topRatedBooks = [];
     }
 
-    console.log('Processamento concluído com sucesso');
+    console.log('✅ Processamento concluído com sucesso');
 
     const responseData = {
       success: true,
@@ -207,7 +277,7 @@ export async function GET() {
           readPages: totalReadPages || 0,
           readingProgress: readingProgress || 0
         },
-        recentActivity: recentBooks.map(book => ({
+        recentActivity: recentBooks.map((book: { id: string; title: string; author: string; genre: { name: string }; status: string; createdAt: Date }) => ({
           id: book.id,
           title: book.title,
           author: book.author,
@@ -232,21 +302,39 @@ export async function GET() {
     return NextResponse.json(responseData);
 
   } catch (error) {
-    console.error('Erro ao buscar estatísticas:', error);
+    console.error('💥 Erro ao buscar estatísticas:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     const errorStack = error instanceof Error ? error.stack : undefined;
     
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erro interno do servidor ao buscar estatísticas',
-        details: process.env.NODE_ENV === 'development' ? {
-          message: errorMessage,
-          stack: errorStack
-        } : undefined
+    // Em caso de erro, retornar dados vazios para evitar quebra da interface
+    return NextResponse.json({
+      success: false,
+      error: 'Erro interno do servidor ao buscar estatísticas',
+      data: {
+        overview: {
+          totalBooks: 0,
+          readingBooks: 0,
+          finishedBooks: 0,
+          wantToReadBooks: 0,
+          pausedBooks: 0,
+          abandonedBooks: 0,
+          totalGenres: 0,
+          averageRating: 0
+        },
+        progress: {
+          totalPages: 0,
+          readPages: 0,
+          readingProgress: 0
+        },
+        recentActivity: [],
+        topGenres: [],
+        topRatedBooks: []
       },
-      { status: 500 }
-    );
+      details: process.env.NODE_ENV === 'development' ? {
+        message: errorMessage,
+        stack: errorStack
+      } : undefined
+    }, { status: 200 }); // Status 200 para não quebrar o frontend
   } finally {
     await prisma.$disconnect();
   }
