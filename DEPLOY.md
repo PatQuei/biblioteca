@@ -5,12 +5,14 @@ Um sistema completo para gerenciar sua biblioteca pessoal de livros com funciona
 ## 🚀 Deploy no Vercel
 
 ### Pré-requisitos
+
 - Conta no [Vercel](https://vercel.com)
 - Repositório Git (GitHub, GitLab, etc.)
 
 ### Passos para Deploy
 
 1. **Fazer push do código para o Git**:
+
    ```bash
    git add .
    git commit -m "Deploy optimization"
@@ -18,11 +20,13 @@ Um sistema completo para gerenciar sua biblioteca pessoal de livros com funciona
    ```
 
 2. **Conectar ao Vercel**:
+
    - Acesse [vercel.com](https://vercel.com)
    - Faça login e clique em "Add New Project"
    - Importe seu repositório
 
 3. **Configurar variáveis de ambiente**:
+
    ```
    NODE_ENV=production
    DATABASE_URL=file:./dev.db
