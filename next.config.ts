@@ -1,8 +1,20 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: path.join(__dirname, '../'),
+  // Otimizações para build mais rápido
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-progress'],
+  },
+  
+  // Reduzir tamanho do bundle
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
+  // Resolver problema de workspace root
+  outputFileTracingRoot: __dirname,
+  
+  // Otimização de imagens
   images: {
     remotePatterns: [
       {
@@ -37,7 +49,6 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cover.openlibrary.org',
       },
-      // Adicionados para resolver o problema
       {
         protocol: 'https',
         hostname: 'i.imgur.com',
@@ -62,6 +73,35 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Otimizações de performance
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 31536000, // 1 ano
+  },
+  
+  // Otimizações de output
+  output: 'standalone',
+  
+  // Headers de cache otimizados
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ];
   },
 };
 
