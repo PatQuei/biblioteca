@@ -122,12 +122,20 @@ biblioteca/
 
 #### Erro: "Erro interno do servidor ao buscar estatísticas"
 
-**Solução**: Este erro geralmente ocorre quando o banco está vazio em produção:
+**Solução**: Este erro ocorre devido a incompatibilidades do SQLite com ambiente serverless:
 
-1. Acesse `/api/test-db` no seu deploy para inicializar dados de exemplo
-2. Ou use a seção "Adicionar" para criar livros manualmente
-3. As APIs foram melhoradas para lidar com bancos vazios
-4. Verifique os logs do Vercel em Functions para mais detalhes
+1. **Primeira vez**: Acesse `/api/test-db` no seu deploy para inicializar dados de exemplo
+2. **Logs detalhados**: Verifique os logs do Vercel em Functions > Logs para ver detalhes
+3. **Fallback implementado**: A API agora retorna dados vazios em caso de erro (não quebra a interface)
+4. **Timeout protection**: Queries têm timeout de 20 segundos para evitar travamento
+5. **Dados manuais**: Use a seção "Adicionar" para criar livros se a inicialização automática falhar
+
+**Melhorias implementadas**:
+- ✅ Path do banco otimizado para `/tmp/dev.db` (padrão serverless)
+- ✅ Binary targets adicionais para compatibilidade Linux
+- ✅ Timeout de 30 segundos nas funções serverless
+- ✅ Logs detalhados com emojis para melhor diagnóstico
+- ✅ Fallback graceful para dados vazios
 
 #### Build timeout no Vercel
 

@@ -5,7 +5,7 @@
   "framework": "nextjs",
   "functions": {
     "src/app/api/**/*.ts": {
-      "maxDuration": 10
+      "maxDuration": 30
     }
   },
   "regions": [
@@ -13,13 +13,13 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "DATABASE_URL": "file:./dev.db",
+    "DATABASE_URL": "file:/tmp/dev.db",
     "NEXT_TELEMETRY_DISABLED": "1"
   },
   "build": {
     "env": {
       "NODE_ENV": "production",
-      "DATABASE_URL": "file:./dev.db",
+      "DATABASE_URL": "file:/tmp/dev.db",
       "PRISMA_GENERATE_SKIP_DOWNLOAD": "true"
     }
   }
