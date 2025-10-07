@@ -97,12 +97,18 @@ DATABASE_URL="postgresql://postgres:password@containers-us-west-xx.railway.app:x
 ## 🆘 Troubleshooting
 
 ### ⚠️ Erro de versão do Node.js (MAIS COMUM)
+
 Se aparecer erro como:
+
 ```
 ❌ You are using Node.js 18.17.0. For Next.js, Node.js version "^18.18.0 || ^19.8.0 || >= 20.0.0" is required.
 ```
 
-**Solução**: ✅ Já corrigido! O package.json está configurado com `"node": ">=20.0.0"`
+**Causa**: O Railway prioriza o arquivo `.nvmrc` sobre o `engines` no package.json
+
+**Solução**: ✅ Já corrigido! 
+- Arquivo `.nvmrc` atualizado para `20.0.0`
+- Package.json configurado com `"node": ">=20.0.0"`
 - O Railway usará automaticamente o Node.js 20+
 - Se o erro persistir, faça "Redeploy" no painel do Railway
 
