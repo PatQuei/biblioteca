@@ -3,6 +3,24 @@ import prisma from '../../lib/prisma';
 
 export async function GET() {
   try {
+    console.log('Iniciando busca de estatísticas...');
+    
+    // Verificar conexão com o banco primeiro
+    try {
+      await prisma.$connect();
+      console.log('Conexão com banco estabelecida');
+    } catch (connectionError) {
+      console.error('Erro de conexão com banco:', connectionError);
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Erro de conexão com o banco de dados',
+          details: process.env.NODE_ENV === 'development' ? connectionError : undefined
+        },
+        { status: 500 }
+      );
+    }
+
     // Buscar estatísticas gerais
     const [
       totalBooks,
@@ -93,6 +111,12 @@ export async function GET() {
       })
     ]);
 
+    console.log('Estatísticas básicas coletadas:', {
+      totalBooks,
+      totalGenres,
+      recentBooksCount: recentBooks.length
+    });
+
     // Calcular estatísticas adicionais
     const finishedBooksData = await prisma.book.findMany({
       where: { status: 'LIDO' },
@@ -104,56 +128,84 @@ export async function GET() {
     const readingProgress = totalPages._sum.pages ? 
       Math.round((totalReadPages / totalPages._sum.pages) * 100) : 0;
 
-    // Estatísticas por gênero
-    const genreStats = await prisma.genre.findMany({
-      include: {
-        _count: {
-          select: {
-            books: true
+    // Estatísticas por gênero (com tratamento para banco vazio)
+    let genreStats: Array<{
+      id: string;
+      name: string;
+      _count: {
+        books: number;
+      };
+    }> = [];
+    try {
+      genreStats = await prisma.genre.findMany({
+        include: {
+          _count: {
+            select: {
+              books: true
+            }
           }
-        }
-      },
-      orderBy: {
-        books: {
-          _count: 'desc'
-        }
-      },
-      take: 5
-    });
+        },
+        orderBy: {
+          books: {
+            _count: 'desc'
+          }
+        },
+        take: 5
+      });
+    } catch (genreError) {
+      console.warn('Erro ao buscar estatísticas de gênero:', genreError);
+      genreStats = [];
+    }
 
-    // Livros mais bem avaliados
-    const topRatedBooks = await prisma.book.findMany({
-      where: {
-        rating: {
-          gt: 0
+    // Livros mais bem avaliados (com tratamento para banco vazio)
+    let topRatedBooks: Array<{
+      id: string;
+      title: string;
+      author: string;
+      rating: number;
+      genre: {
+        name: string;
+      };
+    }> = [];
+    try {
+      topRatedBooks = await prisma.book.findMany({
+        where: {
+          rating: {
+            gt: 0
+          }
+        },
+        orderBy: {
+          rating: 'desc'
+        },
+        take: 5,
+        include: {
+          genre: true
         }
-      },
-      orderBy: {
-        rating: 'desc'
-      },
-      take: 5,
-      include: {
-        genre: true
-      }
-    });
+      });
+    } catch (ratingError) {
+      console.warn('Erro ao buscar livros mais bem avaliados:', ratingError);
+      topRatedBooks = [];
+    }
 
-    return NextResponse.json({
+    console.log('Processamento concluído com sucesso');
+
+    const responseData = {
       success: true,
       data: {
         overview: {
-          totalBooks,
-          readingBooks,
-          finishedBooks,
-          wantToReadBooks,
-          pausedBooks,
-          abandonedBooks,
-          totalGenres,
+          totalBooks: totalBooks || 0,
+          readingBooks: readingBooks || 0,
+          finishedBooks: finishedBooks || 0,
+          wantToReadBooks: wantToReadBooks || 0,
+          pausedBooks: pausedBooks || 0,
+          abandonedBooks: abandonedBooks || 0,
+          totalGenres: totalGenres || 0,
           averageRating: averageRating._avg.rating ? Number(averageRating._avg.rating.toFixed(1)) : 0
         },
         progress: {
           totalPages: totalPages._sum.pages || 0,
-          readPages: totalReadPages,
-          readingProgress
+          readPages: totalReadPages || 0,
+          readingProgress: readingProgress || 0
         },
         recentActivity: recentBooks.map(book => ({
           id: book.id,
@@ -175,16 +227,27 @@ export async function GET() {
           genre: book.genre.name
         }))
       }
-    });
+    };
+
+    return NextResponse.json(responseData);
 
   } catch (error) {
     console.error('Erro ao buscar estatísticas:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Erro interno do servidor ao buscar estatísticas' 
+        error: 'Erro interno do servidor ao buscar estatísticas',
+        details: process.env.NODE_ENV === 'development' ? {
+          message: errorMessage,
+          stack: errorStack
+        } : undefined
       },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

@@ -120,6 +120,15 @@ biblioteca/
 2. No painel do Vercel em Settings > Environment Variables
 3. No arquivo `.env` local para desenvolvimento
 
+#### Erro: "Erro interno do servidor ao buscar estatísticas"
+
+**Solução**: Este erro geralmente ocorre quando o banco está vazio em produção:
+
+1. Acesse `/api/test-db` no seu deploy para inicializar dados de exemplo
+2. Ou use a seção "Adicionar" para criar livros manualmente
+3. As APIs foram melhoradas para lidar com bancos vazios
+4. Verifique os logs do Vercel em Functions para mais detalhes
+
 #### Build timeout no Vercel
 
 **Solução**: As otimizações implementadas reduzem o build de 45+ minutos para ~2 minutos:
