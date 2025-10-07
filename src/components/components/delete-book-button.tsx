@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteBookAPI } from "../../app/lib/api-client";
 
 interface DeleteBookButtonProps {
   bookId: string;
@@ -27,18 +26,40 @@ export default function DeleteBookButton({
     setIsDeleting(true);
 
     try {
-      const result = await deleteBookAPI(bookId);
+      const response = await fetch(`/api/books/${bookId}`, {
+        method: "DELETE",
+      });
 
-      if (result.success) {
+      // Se a resposta for OK (sucesso), não fazemos nada com o corpo
+      // e assumimos que a exclusão funcionou.
+      if (response.ok) {
         setIsOpen(false);
+        alert("Livro deletado com sucesso!");
+        
         if (onDelete) {
           onDelete();
         } else {
-          router.push("/biblioteca");
+          router.refresh(); 
         }
-        alert(result.message);
       } else {
-        throw new Error(result.error);
+        // Se a resposta for um erro, primeiro tentamos ler o corpo como texto.
+        // Isso evita o erro de JSON se o corpo estiver vazio ou for HTML.
+        const errorText = await response.text();
+        let errorMessage = "Falha ao deletar o livro.";
+
+        // Só tentamos fazer o parse de JSON se o texto não for vazio.
+        if (errorText) {
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error || errorMessage;
+          } catch (e) {
+            // Se o texto de erro não for JSON, usamos o próprio texto.
+            // Isso pode ser útil para erros de servidor que retornam HTML.
+            errorMessage = errorText;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Erro ao deletar livro:", error);

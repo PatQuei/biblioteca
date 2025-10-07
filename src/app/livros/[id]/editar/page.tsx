@@ -19,11 +19,13 @@ const EditarLivroPage: React.FC = () => {
   useEffect(() => {
     const fetchBook = async () => {
       try {
+        // Esta chamada de API busca os dados do livro específico.
         const response = await fetch(`/api/books/${bookId}`);
         const result = await response.json();
 
+        // Esta é a lógica CORRETA, pois sua API retorna um objeto { success: true, data: {...} }
         if (result.success) {
-          setBookData(result.data);
+          setBookData(result.data); // Usamos result.data para pegar o objeto do livro
         } else {
           alert("Erro ao carregar dados do livro");
           router.push("/biblioteca");

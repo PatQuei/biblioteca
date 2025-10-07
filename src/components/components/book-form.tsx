@@ -30,6 +30,25 @@ const BookForm: React.FC<BookFormProps> = ({
     notes: initialData?.notes || "",
   });
 
+  useEffect(() => {
+    if (initialData) {
+      setFormState({
+        title: initialData.title || "",
+        author: initialData.author || "",
+        genreId: initialData.genreId || "",
+        year: initialData.year || new Date().getFullYear(),
+        pages: initialData.pages || 0,
+        rating: initialData.rating || 0,
+        synopsis: initialData.synopsis || "",
+        cover: initialData.cover || "",
+        status: initialData.status || "QUERO_LER",
+        currentPage: initialData.currentPage || 0,
+        isbn: initialData.isbn || "",
+        notes: initialData.notes || "",
+      });
+    }
+  }, [initialData]);
+
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loadingGenres, setLoadingGenres] = useState(true);
   const [progress, setProgress] = useState(0);
