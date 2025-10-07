@@ -131,6 +131,7 @@ biblioteca/
 5. **Dados manuais**: Use a seção "Adicionar" para criar livros se a inicialização automática falhar
 
 **Melhorias implementadas**:
+
 - ✅ Path do banco otimizado para `/tmp/dev.db` (padrão serverless)
 - ✅ Binary targets adicionais para compatibilidade Linux
 - ✅ Timeout de 30 segundos nas funções serverless
