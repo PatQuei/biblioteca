@@ -1,5 +1,7 @@
-import prisma from "src/app/lib/prisma";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,29 +14,73 @@ import {
   Edit,
 } from "lucide-react";
 import DeleteBookButton from "../../../components/components/delete-book-button";
+import type { Book, Genre } from "../../types/book";
 
-// Esta função busca os dados do livro no servidor
-async function getBook(id: string) {
-  const book = await prisma.book.findUnique({
-    where: { id },
-    include: {
-      genre: true,
-    },
-  });
+type BookWithGenre = Book & {
+  genre: Genre;
+};
 
-  if (!book) {
-    notFound();
+export default function BookDetailsPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const [book, setBook] = useState<BookWithGenre | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBook = async () => {
+      try {
+        const response = await fetch(`/api/books/${id}`);
+        const result = await response.json();
+
+        if (result.success) {
+          setBook(result.data);
+        } else {
+          setError("Livro não encontrado");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar livro:", error);
+        setError("Erro ao carregar dados do livro");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchBook();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            Carregando detalhes do livro...
+          </p>
+        </div>
+      </div>
+    );
   }
-  return book;
-}
 
-export default async function BookDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const book = await getBook(id);
+  if (error || !book) {
+    return (
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            {error || "Livro não encontrado"}
+          </h1>
+          <Link
+            href="/biblioteca"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Voltar à Biblioteca
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const progress = book.pages > 0 ? (book.currentPage / book.pages) * 100 : 0;
 
@@ -143,7 +189,7 @@ export default async function BookDetailsPage({
               </Link>
 
               <DeleteBookButton
-                bookId={book.id}
+                bookId={book.id!}
                 bookTitle={book.title}
                 className="flex items-center gap-2"
               />

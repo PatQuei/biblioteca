@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteBook } from "../../app/actions/books";
+import { deleteBookAPI } from "../../app/lib/api-client";
 
 interface DeleteBookButtonProps {
   bookId: string;
@@ -27,7 +27,7 @@ export default function DeleteBookButton({
     setIsDeleting(true);
 
     try {
-      const result = await deleteBook(bookId);
+      const result = await deleteBookAPI(bookId);
 
       if (result.success) {
         setIsOpen(false);
