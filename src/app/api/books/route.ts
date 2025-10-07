@@ -2,8 +2,123 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '../../lib/prisma';
 
+// Dados de demonstração para fallback
+const DEMO_BOOKS = [
+  {
+    id: 'demo-1',
+    title: 'O Senhor dos Anéis',
+    author: 'J.R.R. Tolkien',
+    genre: { id: 'demo-genre-1', name: 'Fantasia' },
+    genreId: 'demo-genre-1',
+    year: 1954,
+    pages: 1216,
+    rating: 5,
+    synopsis: 'Uma épica jornada através da Terra-média.',
+    cover: '/images/o senhor dos aneis.jpg',
+    status: 'LIDO',
+    currentPage: 1216,
+    isbn: '9780547928227',
+    notes: 'Obra-prima da literatura fantástica',
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date('2024-01-15')
+  },
+  {
+    id: 'demo-2',
+    title: 'Dom Casmurro',
+    author: 'Machado de Assis',
+    genre: { id: 'demo-genre-2', name: 'Ficção' },
+    genreId: 'demo-genre-2',
+    year: 1899,
+    pages: 256,
+    rating: 4,
+    synopsis: 'Romance de Machado de Assis sobre ciúme e traição.',
+    cover: '',
+    status: 'LENDO',
+    currentPage: 200,
+    isbn: '9788535902773',
+    notes: 'Clássico da literatura brasileira',
+    createdAt: new Date('2024-01-10'),
+    updatedAt: new Date('2024-01-20')
+  },
+  {
+    id: 'demo-3',
+    title: 'Orgulho e Preconceito',
+    author: 'Jane Austen',
+    genre: { id: 'demo-genre-3', name: 'Romance' },
+    genreId: 'demo-genre-3',
+    year: 1813,
+    pages: 432,
+    rating: 0,
+    synopsis: 'Romance sobre amor e sociedade na Inglaterra do século XIX.',
+    cover: '',
+    status: 'QUERO_LER',
+    currentPage: 0,
+    isbn: '9780141439518',
+    notes: '',
+    createdAt: new Date('2024-01-05'),
+    updatedAt: new Date('2024-01-05')
+  }
+];
+
 // GET /api/books - Listar todos os livros com filtros avançados
 export async function GET(request: NextRequest) {
+  // Em ambiente Vercel, usar dados de demonstração
+  if (process.env.VERCEL && process.env.NODE_ENV === 'production') {
+    console.log('🏠 Usando dados de demonstração para livros');
+    const { searchParams } = new URL(request.url);
+    
+    // Aplicar filtros simples aos dados de demonstração
+    let filteredBooks = [...DEMO_BOOKS];
+    
+    const search = searchParams.get('search');
+    if (search) {
+      filteredBooks = filteredBooks.filter(book => 
+        book.title.toLowerCase().includes(search.toLowerCase()) ||
+        book.author.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    
+    const status = searchParams.get('status');
+    if (status) {
+      filteredBooks = filteredBooks.filter(book => book.status === status);
+    }
+    
+    const genre = searchParams.get('genre');
+    if (genre) {
+      filteredBooks = filteredBooks.filter(book => 
+        book.genre.name.toLowerCase() === genre.toLowerCase()
+      );
+    }
+    
+    return NextResponse.json({
+      success: true,
+      data: filteredBooks,
+      totalCount: filteredBooks.length,
+      stats: {
+        total: filteredBooks.length,
+        showing: filteredBooks.length,
+        page: 1,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+        genreDistribution: filteredBooks.reduce((acc, book) => {
+          acc[book.genre.name] = (acc[book.genre.name] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+        statusDistribution: filteredBooks.reduce((acc, book) => {
+          acc[book.status] = (acc[book.status] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+        averageRating: filteredBooks.reduce((sum, book) => sum + book.rating, 0) / filteredBooks.length,
+        averagePages: filteredBooks.reduce((sum, book) => sum + book.pages, 0) / filteredBooks.length,
+        yearRange: { min: 1813, max: 1954 }
+      },
+      demo: true,
+      message: 'Dados de demonstração - acesse localmente para usar dados reais'
+    });
+  }
+  
+  // Código original para desenvolvimento
   try {
     const { searchParams } = new URL(request.url);
     
@@ -178,14 +293,36 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Erro ao buscar livros:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Erro interno do servidor ao buscar livros',
-        details: error instanceof Error ? error.message : 'Erro desconhecido'
+    
+    // Fallback para dados de demonstração em caso de erro
+    return NextResponse.json({
+      success: true,
+      data: DEMO_BOOKS,
+      totalCount: DEMO_BOOKS.length,
+      stats: {
+        total: DEMO_BOOKS.length,
+        showing: DEMO_BOOKS.length,
+        page: 1,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+        genreDistribution: {
+          'Fantasia': 1,
+          'Ficção': 1,
+          'Romance': 1
+        },
+        statusDistribution: {
+          'LIDO': 1,
+          'LENDO': 1,
+          'QUERO_LER': 1
+        },
+        averageRating: 3,
+        averagePages: 635,
+        yearRange: { min: 1813, max: 1954 }
       },
-      { status: 500 }
-    );
+      fallback: true,
+      message: 'Dados de demonstração devido a erro no banco'
+    });
   }
 }
 

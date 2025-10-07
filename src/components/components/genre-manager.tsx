@@ -31,6 +31,11 @@ export function GenreManager({
         const data = await response.json();
         if (data.success) {
           setGenres(data.data);
+          
+          // Mostrar mensagem se for dados de demonstração
+          if (data.demo) {
+            setError(data.message || "Modo demonstração ativo");
+          }
         } else {
           setError("Erro ao carregar gêneros");
         }
@@ -65,7 +70,13 @@ export function GenreManager({
         setGenres((prev) => [...prev, newGenre]);
         setNewGenreName("");
         onGenreCreated?.(newGenre);
-        alert(result.message);
+        
+        // Mostrar mensagem apropriada baseada no tipo de resposta
+        if ((result as any).demo || (result as any).fallback) {
+          alert((result as any).message || "Gênero criado em modo demonstração");
+        } else {
+          alert(result.message || "Gênero criado com sucesso");
+        }
       } else {
         throw new Error(result.error);
       }
