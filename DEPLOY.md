@@ -25,13 +25,17 @@ Um sistema completo para gerenciar sua biblioteca pessoal de livros com funciona
    - Faça login e clique em "Add New Project"
    - Importe seu repositório
 
-3. **Configurar variáveis de ambiente**:
+3. **Configurar variáveis de ambiente no Vercel**:
+
+   No painel do Vercel, vá em Settings > Environment Variables e adicione:
 
    ```
-   NODE_ENV=production
    DATABASE_URL=file:./dev.db
+   NODE_ENV=production
    NEXT_TELEMETRY_DISABLED=1
    ```
+
+   **Nota**: As variáveis já estão configuradas no `vercel.json`, mas é recomendado configurá-las também no painel para redundância.
 
 4. **Deploy automático**:
    - O Vercel detectará automaticamente que é um projeto Next.js
@@ -101,10 +105,35 @@ biblioteca/
 
 ### Performance
 
-- **Build Time**: ~35 segundos (otimizado para Vercel)
+- **Build Time**: ~10 segundos (otimizado para Vercel)
 - **Bundle Size**: 102KB shared chunks
 - **First Load**: 111KB average
 - **Static Pages**: 13 páginas pré-renderizadas
+
+### Troubleshooting
+
+#### Erro: "Environment variable not found: DATABASE_URL"
+
+**Solução**: Verifique se a variável `DATABASE_URL` está configurada:
+
+1. No arquivo `vercel.json` (já configurado)
+2. No painel do Vercel em Settings > Environment Variables
+3. No arquivo `.env` local para desenvolvimento
+
+#### Build timeout no Vercel
+
+**Solução**: As otimizações implementadas reduzem o build de 45+ minutos para ~2 minutos:
+
+- Prisma otimizado com binary targets
+- Next.js config otimizado
+- Scripts de build simplificados
+
+#### Problemas com migrações
+
+**Solução**: O script `vercel-build` foi simplificado para evitar conflitos:
+
+- Removido `prisma migrate deploy` do build inicial
+- Use o painel do Vercel para aplicar migrações se necessário
 
 ---
 
