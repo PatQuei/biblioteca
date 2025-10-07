@@ -110,7 +110,7 @@ export function GenreManager({
       if (result.success) {
         setGenres((prev) => prev.filter((g) => g.id !== genreId));
         onGenreDeleted?.(genreId);
-        
+
         // Mostrar mensagem apropriada
         if (result.demo || result.fallback) {
           alert(result.message || "Gênero deletado em modo demonstração");
@@ -147,7 +147,7 @@ export function GenreManager({
             ⚠️ Modo Demonstração Ativo
           </h3>
           <p className="text-amber-700 dark:text-amber-400 mb-4">
-            {error.includes("demonstração") 
+            {error.includes("demonstração")
               ? "Os gêneros exibidos são dados de demonstração. As modificações são simuladas."
               : "Erro ao carregar gêneros do banco de dados. Usando dados de demonstração."}
           </p>
