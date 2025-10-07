@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Tag } from "lucide-react";
-import { createGenre, deleteGenre } from "../../app/actions/books";
 import type { Genre } from "../../app/types/book";
 
 interface GenreManagerProps {
@@ -31,7 +30,7 @@ export function GenreManager({
         const data = await response.json();
         if (data.success) {
           setGenres(data.data);
-          
+
           // Mostrar mensagem se for dados de demonstração
           if (data.demo) {
             setError(data.message || "Modo demonstração ativo");
@@ -60,25 +59,31 @@ export function GenreManager({
 
     setIsCreating(true);
     try {
-      const formData = new FormData();
-      formData.append("name", newGenreName.trim());
+      // Usar API REST em vez de Server Action
+      const response = await fetch("/api/categories/genres", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newGenreName.trim() }),
+      });
 
-      const result = await createGenre(formData);
+      const result = await response.json();
 
       if (result.success && result.data) {
         const newGenre = result.data;
         setGenres((prev) => [...prev, newGenre]);
         setNewGenreName("");
         onGenreCreated?.(newGenre);
-        
+
         // Mostrar mensagem apropriada baseada no tipo de resposta
-        if ((result as any).demo || (result as any).fallback) {
-          alert((result as any).message || "Gênero criado em modo demonstração");
+        if (result.demo || result.fallback) {
+          alert(result.message || "Gênero criado em modo demonstração");
         } else {
           alert(result.message || "Gênero criado com sucesso");
         }
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || "Erro ao criar gênero");
       }
     } catch (error) {
       console.error("Erro ao criar gênero:", error);
@@ -95,14 +100,25 @@ export function GenreManager({
 
     setIsDeleting(genreId);
     try {
-      const result = await deleteGenre(genreId);
+      // Usar API REST em vez de Server Action
+      const response = await fetch(`/api/categories?id=${genreId}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
 
       if (result.success) {
         setGenres((prev) => prev.filter((g) => g.id !== genreId));
         onGenreDeleted?.(genreId);
-        alert(result.message);
+        
+        // Mostrar mensagem apropriada
+        if (result.demo || result.fallback) {
+          alert(result.message || "Gênero deletado em modo demonstração");
+        } else {
+          alert(result.message || "Gênero deletado com sucesso");
+        }
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || "Erro ao deletar gênero");
       }
     } catch (error) {
       console.error("Erro ao deletar gênero:", error);
@@ -126,13 +142,27 @@ export function GenreManager({
   if (error) {
     return (
       <div className="text-center py-4">
-        <p className="text-red-600 dark:text-red-400">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Tentar Novamente
-        </button>
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-2">
+            ⚠️ Modo Demonstração Ativo
+          </h3>
+          <p className="text-amber-700 dark:text-amber-400 mb-4">
+            {error.includes("demonstração") 
+              ? "Os gêneros exibidos são dados de demonstração. As modificações são simuladas."
+              : "Erro ao carregar gêneros do banco de dados. Usando dados de demonstração."}
+          </p>
+          <button
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              // Recarregar
+              window.location.reload();
+            }}
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Tentar Novamente
+          </button>
+        </div>
       </div>
     );
   }

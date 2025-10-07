@@ -39,8 +39,10 @@ export default function GenerosPage() {
             🌟 Modo Demonstração
           </h3>
           <p className="text-sm text-amber-700 dark:text-amber-400">
-            Esta aplicação está rodando em modo demonstração. As modificações nos gêneros são simuladas e não serão salvas permanentemente.
-            Para usar o sistema completo com dados reais, execute a aplicação localmente.
+            Esta aplicação está rodando em modo demonstração. As modificações
+            nos gêneros são simuladas e não serão salvas permanentemente. Para
+            usar o sistema completo com dados reais, execute a aplicação
+            localmente.
           </p>
         </div>
 
