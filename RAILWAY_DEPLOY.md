@@ -106,7 +106,8 @@ Se aparecer erro como:
 
 **Causa**: O Railway prioriza o arquivo `.nvmrc` sobre o `engines` no package.json
 
-**Solução**: ✅ Já corrigido! 
+**Solução**: ✅ Já corrigido!
+
 - Arquivo `.nvmrc` atualizado para `20.0.0`
 - Package.json configurado com `"node": ">=20.0.0"`
 - O Railway usará automaticamente o Node.js 20+
