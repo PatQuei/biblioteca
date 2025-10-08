@@ -39,18 +39,33 @@
 - Executa: `npm install` → `npm run build` → `npm start`
 - Processo leva 3-5 minutos
 
-#### 2.5 Criar tabelas no banco
+#### 2.5 Criar tabelas no banco (CRÍTICO!)
 
-Após o deploy, acesse a aba "Shell" do serviço e execute:
+⚠️ **IMPORTANTE**: Sem este passo, a aplicação só mostrará dados de demonstração!
+
+Após o deploy, acesse a aba **"Shell"** do serviço no Railway e execute:
 
 ```bash
-# Opção 1: Aplicar migrações existentes
-npx prisma migrate deploy
-
-# Opção 2: Recriar tudo do zero (recomendado na primeira vez)
+# Passo 1: Criar as tabelas
 npx prisma db push
+
+# Passo 2: Popular com dados iniciais
 npx prisma db seed
+
+# Passo 3: Verificar se funcionou
+npx prisma db execute --command "SELECT COUNT(*) FROM \"Book\""
 ```
+
+**OU use o script automatizado:**
+```bash
+# Script que faz tudo automaticamente
+chmod +x railway-setup.sh && ./railway-setup.sh
+```
+
+✅ **Como saber se funcionou:**
+- No Railway, execute: `npx prisma db execute --command "SELECT COUNT(*) FROM \"Book\""`
+- Deve retornar um número > 0
+- A aplicação mostrará dados reais ao invés de "demonstração"
 
 ## ✅ Resultado Final
 
@@ -95,6 +110,31 @@ DATABASE_URL="postgresql://postgres:password@containers-us-west-xx.railway.app:x
 ## 🆘 Troubleshooting
 
 ## 🆘 Troubleshooting
+
+### 🚨 PROBLEMA: "Só consigo ver dados, não consigo criar/editar/deletar"
+
+**Sintomas:**
+- Interface carrega perfeitamente
+- Gêneros aparecem mas não consegue criar/deletar
+- Livros aparecem mas não consegue editar/excluir/criar
+- Mensagem: "Dados de demonstração"
+
+**Causa:** Banco PostgreSQL não foi configurado no Railway
+
+**Solução:**
+1. Acesse Railway → Seu projeto → Serviço da aplicação
+2. Clique na aba **"Shell"** 
+3. Execute estes comandos:
+   ```bash
+   npx prisma db push
+   npx prisma db seed
+   ```
+4. Verifique se funcionou:
+   ```bash
+   npx prisma db execute --command "SELECT COUNT(*) FROM \"Book\""
+   ```
+5. Deve retornar número > 0
+6. Recarregue a aplicação - agora deve permitir CRUD completo
 
 ### ⚠️ Erro de versão do Node.js (MAIS COMUM)
 
