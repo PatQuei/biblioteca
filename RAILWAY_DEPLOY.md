@@ -43,26 +43,42 @@
 
 ⚠️ **IMPORTANTE**: Sem este passo, a aplicação só mostrará dados de demonstração!
 
-Após o deploy, acesse a aba **"Shell"** do serviço no Railway e execute:
+**Onde executar comandos no Railway:**
 
+**Opção 1 - Shell/Terminal (se disponível):**
+1. Railway → Seu projeto → Serviço da aplicação
+2. Procure por: "Shell", "Terminal", "Console" ou "Execute" 
+3. Se encontrar, execute os comandos abaixo
+
+**Opção 2 - Connect (mais comum na interface nova):**
+1. Railway → Seu projeto → Serviço da aplicação  
+2. Clique em "Connect" (no menu lateral ou superior)
+3. Escolha uma opção como "Web Terminal" ou "Railway CLI"
+
+**Opção 3 - Railway CLI (sempre funciona):**
+```bash
+# No seu computador local
+npm install -g @railway/cli
+railway login
+railway link
+railway run npx prisma db push
+railway run npx prisma db seed
+```
+
+**Comandos para executar (em qualquer uma das opções):**
 ```bash
 # Passo 1: Criar as tabelas
 npx prisma db push
 
-# Passo 2: Popular com dados iniciais
+# Passo 2: Popular com dados iniciais  
 npx prisma db seed
 
 # Passo 3: Verificar se funcionou
 npx prisma db execute --command "SELECT COUNT(*) FROM \"Book\""
 ```
 
-**OU use o script automatizado:**
-```bash
-# Script que faz tudo automaticamente
-chmod +x railway-setup.sh && ./railway-setup.sh
-```
-
 ✅ **Como saber se funcionou:**
+
 - No Railway, execute: `npx prisma db execute --command "SELECT COUNT(*) FROM \"Book\""`
 - Deve retornar um número > 0
 - A aplicação mostrará dados reais ao invés de "demonstração"
@@ -114,6 +130,7 @@ DATABASE_URL="postgresql://postgres:password@containers-us-west-xx.railway.app:x
 ### 🚨 PROBLEMA: "Só consigo ver dados, não consigo criar/editar/deletar"
 
 **Sintomas:**
+
 - Interface carrega perfeitamente
 - Gêneros aparecem mas não consegue criar/deletar
 - Livros aparecem mas não consegue editar/excluir/criar
@@ -121,22 +138,27 @@ DATABASE_URL="postgresql://postgres:password@containers-us-west-xx.railway.app:x
 
 **Causa:** Banco PostgreSQL não foi configurado no Railway
 
-**Solução:**
-1. Acesse Railway → Seu projeto → Serviço da aplicação
-2. Clique na aba **"Shell"** 
-3. Execute estes comandos:
-   ```bash
-   npx prisma db push
-   npx prisma db seed
-   ```
-4. Verifique se funcionou:
-   ```bash
-   npx prisma db execute --command "SELECT COUNT(*) FROM \"Book\""
-   ```
-5. Deve retornar número > 0
-6. Recarregue a aplicação - agora deve permitir CRUD completo
+**Solução - 3 opções:**
 
-### ⚠️ Erro de versão do Node.js (MAIS COMUM)
+**Opção A - Interface Railway:**
+1. Railway → Seu projeto → Serviço da aplicação
+2. Procure: "Connect", "Shell", "Terminal" ou ícone de terminal
+3. Execute: `npx prisma db push && npx prisma db seed`
+
+**Opção B - Railway CLI (recomendado):**
+```bash
+# No seu computador local
+npm install -g @railway/cli
+railway login
+railway link
+railway run npx prisma db push
+railway run npx prisma db seed
+```
+
+**Opção C - Logs para debug:**
+1. Railway → Deploy Logs
+2. Veja se há erros de conexão com banco
+3. Confirme se DATABASE_URL está configurada### ⚠️ Erro de versão do Node.js (MAIS COMUM)
 
 Se aparecer erro como:
 
