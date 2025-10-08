@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '../../lib/prisma';
 
-// Dados de demonstração para fallback (mesmos da API genres)
+// Array de dados de demonstração para categorias
 const DEMO_CATEGORIES = [
   {
     id: 'demo-genre-1',

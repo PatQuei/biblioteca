@@ -213,10 +213,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Erro ao criar gênero:', error);
     
-    // Fallback - simular criação
-    const body = await request.json();
-    const { name } = body;
-    
+    // Fallback - simular criação (reutilizar body já parseado)
     return NextResponse.json({
       success: true,
       data: {

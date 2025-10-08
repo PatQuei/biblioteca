@@ -46,16 +46,19 @@
 **Onde executar comandos no Railway:**
 
 **Opção 1 - Shell/Terminal (se disponível):**
+
 1. Railway → Seu projeto → Serviço da aplicação
-2. Procure por: "Shell", "Terminal", "Console" ou "Execute" 
+2. Procure por: "Shell", "Terminal", "Console" ou "Execute"
 3. Se encontrar, execute os comandos abaixo
 
 **Opção 2 - Connect (mais comum na interface nova):**
-1. Railway → Seu projeto → Serviço da aplicação  
+
+1. Railway → Seu projeto → Serviço da aplicação
 2. Clique em "Connect" (no menu lateral ou superior)
 3. Escolha uma opção como "Web Terminal" ou "Railway CLI"
 
 **Opção 3 - Railway CLI (sempre funciona):**
+
 ```bash
 # No seu computador local
 npm install -g @railway/cli
@@ -66,11 +69,12 @@ railway run npx prisma db seed
 ```
 
 **Comandos para executar (em qualquer uma das opções):**
+
 ```bash
 # Passo 1: Criar as tabelas
 npx prisma db push
 
-# Passo 2: Popular com dados iniciais  
+# Passo 2: Popular com dados iniciais
 npx prisma db seed
 
 # Passo 3: Verificar se funcionou
@@ -141,11 +145,13 @@ DATABASE_URL="postgresql://postgres:password@containers-us-west-xx.railway.app:x
 **Solução - 3 opções:**
 
 **Opção A - Interface Railway:**
+
 1. Railway → Seu projeto → Serviço da aplicação
 2. Procure: "Connect", "Shell", "Terminal" ou ícone de terminal
 3. Execute: `npx prisma db push && npx prisma db seed`
 
 **Opção B - Railway CLI (recomendado):**
+
 ```bash
 # No seu computador local
 npm install -g @railway/cli
@@ -156,6 +162,7 @@ railway run npx prisma db seed
 ```
 
 **Opção C - Logs para debug:**
+
 1. Railway → Deploy Logs
 2. Veja se há erros de conexão com banco
 3. Confirme se DATABASE_URL está configurada### ⚠️ Erro de versão do Node.js (MAIS COMUM)
