@@ -306,3 +306,64 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     );
   }
 }
+
+// DELETE /api/books/[id] - Deletar um livro
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+
+    // Tentar deletar do banco real primeiro
+    try {
+      // Verificar se o livro existe
+      const existingBook = await prisma.book.findUnique({
+        where: { id }
+      });
+
+      if (existingBook) {
+        await prisma.book.delete({
+          where: { id }
+        });
+
+        // Revalidar as páginas que mostram livros
+        revalidatePath('/biblioteca');
+        revalidatePath('/');
+
+        return NextResponse.json({
+          success: true,
+          message: 'Livro deletado com sucesso!'
+        });
+      }
+    } catch {
+      console.log('Banco de dados não disponível, simulando exclusão');
+    }
+
+    // Fallback: simular exclusão dos dados de demonstração
+    const demoBook = DEMO_BOOKS.find(book => book.id === id);
+    
+    if (demoBook) {
+      return NextResponse.json({
+        success: true,
+        demo: true,
+        message: 'Exclusão simulada - dados de demonstração'
+      });
+    }
+
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Livro não encontrado' 
+      },
+      { status: 404 }
+    );
+
+  } catch (error) {
+    console.error('Erro ao deletar livro:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Erro interno do servidor ao deletar livro' 
+      },
+      { status: 500 }
+    );
+  }
+}
